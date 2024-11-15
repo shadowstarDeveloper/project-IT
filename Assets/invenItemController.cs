@@ -64,20 +64,25 @@ public class invenItemController : MonoBehaviour, IDragHandler
 
     private void OnMouseUp() {
        StopCoroutine("rotation");
-        setTileTarget();
+       setTileTarget();
     }
 
     IEnumerator resetTileHit() {
-        yield return new WaitForFixedUpdate();
+        while( items.Count < col * row) {
+            yield return new WaitForFixedUpdate();
+            setRotation();
+        }
         for (int i = 0; i < items.Count; i++) {
             if (items[i].tag == "invenTile") {
                 items[i].GetComponent<slotClass>().setTile(itemclass.Tag);
             }
         }
+
         StopCoroutine("resetTileHit");
     }
     private void setTileTarget() {
         bool hit = setTileTargetCheck();
+        
         if (hit) {
 
 
@@ -91,13 +96,19 @@ public class invenItemController : MonoBehaviour, IDragHandler
             StartCoroutine("resetTileHit");
             
         } else {
-            transform.localPosition = new Vector2(Mathf.Ceil(transform.localPosition.x / size) * size - size / 2, Mathf.Ceil(transform.localPosition.y / size) * size - size / 2);
-            for (int i = 0; i < items.Count; i++) {
-                if (items[i].tag == "invenTile") {
-                    items[i].GetComponent<slotClass>().setTile(itemclass.Tag);
+            if (items.Count < row * col) {
+                //충돌 갯수가 부족할 경우  원래위치로 돌아가기
+                gameObject.transform.localPosition = startPos;
+                StartCoroutine("resetTileHit");
+            } else {
+
+                transform.localPosition = new Vector2(Mathf.Ceil(transform.localPosition.x / size) * size - size / 2, Mathf.Ceil(transform.localPosition.y / size) * size - size / 2);
+                for (int i = 0; i < items.Count; i++) {
+                    if (items[i].tag == "invenTile") {
+                        items[i].GetComponent<slotClass>().setTile(itemclass.Tag);
+                    }
                 }
             }
-
         }
     }
     private bool setTileTargetCheck() {
@@ -114,6 +125,12 @@ public class invenItemController : MonoBehaviour, IDragHandler
         return hit;
     }
     private void OnTriggerEnter2D(Collider2D collision) {
+        checkHit(collision);
+    }
+    private void OnTriggerStay2D(Collider2D collision) {
+       // checkHit(collision);
+    }
+    void checkHit(Collider2D collision) {
         if (collision != null) {
             if (collision.tag == "invenTile") {
 
@@ -126,9 +143,6 @@ public class invenItemController : MonoBehaviour, IDragHandler
                 }
             }
         }
-    }
-    private void OnTriggerStay2D(Collider2D collision) {
-        
     }
     private void OnTriggerExit2D(Collider2D collision) {
         if (collision != null) {
