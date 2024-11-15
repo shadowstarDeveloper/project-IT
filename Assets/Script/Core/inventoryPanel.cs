@@ -11,6 +11,7 @@ public class inventoryPanel : MonoBehaviour
     public int col;
     public float size;
     public List<itemClass> itemList = new List<itemClass>();
+    [SerializeField] private Transform pos;
 
     //
     [SerializeField] GameObject invenSlot;
@@ -34,7 +35,7 @@ public class inventoryPanel : MonoBehaviour
         
     }
     private slotClass fmakeSlot(int a, int b) {
-        GameObject slot= Instantiate(invenSlot, gameObject.transform );
+        GameObject slot= Instantiate(invenSlot, pos);
         slot.transform.localPosition = new Vector2(a * size, -b * size);
 
         slotClass clas = slot.GetComponent<slotClass>();
