@@ -10,7 +10,7 @@ public class itemClass : MonoBehaviour
     public string spriteTag;
     public string miscType; //wood, metal, meat, vegitable, ... 
     public int num, maxNum; //갯수,최대갯수 
-    public int[,] matrix; //가로 세로 크기
+    public int row, col; // 아이템 크기
     public float weight;
     public float amount; //기본값 0, 무게는 weight+amount ; 물병 0.2kg + 1L = 1.2 kg
 
