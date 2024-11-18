@@ -74,9 +74,6 @@ public class inventoryPanel : MonoBehaviour
         if (_row > row) _row = row;
         if( _col > col) _col = col;
 
-        //여기가문제네       
-
-
         //슬롯이 가능한 슬롯일 경우
         if (hasPlaceItem(item, startRow, startCol)) {
             //슬롯이 가능한 슬롯일 경우
@@ -95,17 +92,25 @@ public class inventoryPanel : MonoBehaviour
         }
 
     }
-    private bool canPlaceItem(itemClass item, int startRow, int startCol) {
+    
+    public bool canPlaceItem(itemClass item, int startRow, int startCol) {
         //아이템 배치 가능 여부 확인
         if(startRow <0 || startCol <0) return false;
 
         for(int r = 0; r <item.row; r++) {
-            for(int c = 0; c<item.col; c++) {
+            for (int c = 0; c < item.col; c++) {
                 int _row = startRow + r;
                 int _col = startCol + c;
                 //Debug.Log($"{startRow},{startCol} to {_row},{_col}");
-                if (_row >= row || _col >= col || inventory[_row, _col] != null) {
+                if (_row >= row || _col >= col ) {
                     return false; // 범위를 벗어나거나 이미 사용 중인 슬롯이 있을 경우
+
+                } else if( inventory[_row, _col] != null) {
+                    if (inventory[_row, _col] == item) {
+                        return true;
+                    } else {
+                        return false;
+                    }
                 }
             }
         }
@@ -122,10 +127,20 @@ public class inventoryPanel : MonoBehaviour
                 //Debug.Log($"{startRow},{startCol} to {_row},{_col}");
                 if (_row >= row || _col >= col ) {
                     return false; // 범위를 벗어나거나 이미 사용 중인 슬롯이 있을 경우
+                } else {
+                    if (inventory[_row, _col] == item) {
+                        return true;
+                    } else {
+                        return false; // 범위를 벗어나거나 이미 사용 중인 슬롯이 있을 경우
+                    }
                 }
             }
         }
         return true;
+    }
+    public Vector2 slotPosition(int _row, int _col) {
+        Vector2 pos = slots[_row, _col].transform.localPosition;
+        return new Vector2(pos.x-size/2, pos.y+size/2);
     }
     // Update is called once per frame
     void Update()

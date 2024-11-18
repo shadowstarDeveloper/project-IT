@@ -48,24 +48,22 @@ public class invenItemController : MonoBehaviour, IBeginDragHandler, IDragHandle
         int b = (int)itemclass.col;
         itemclass.col = (int)a;
         itemclass.row = (int)b;
+        rotate = !rotate;
         setSize();
        // Debug.Log($"{row}, {col}");
     }
 
-    IEnumerator rotation() {
-        while (true) {
-
-            yield return new WaitForFixedUpdate();
-            
+    bool rotate = false;
+    bool drag = false;
+    void Update() {
+        if (drag) {
             if (Input.GetKeyDown(KeyCode.R)) {
                 setRotation();
             }
-         }
+        }
     }
-
-
     public void OnBeginDrag(PointerEventData eventData) {
-        StartCoroutine("rotation");
+        drag = true;
         resetTileTarget();
         // 드래그 시작 시
         originalParent = transform.parent; // 원래 부모 저장
@@ -78,6 +76,7 @@ public class invenItemController : MonoBehaviour, IBeginDragHandler, IDragHandle
        // transform.localPosition = new Vector2(Input.mousePosition.x-mousePos.x, Input.mousePosition.y-mousePos.y);
         rectTransform.anchoredPosition += eventData.delta / canvas.scaleFactor; // 마우스 따라 이동
 
+        
         //충돌검사
         
 
@@ -86,28 +85,51 @@ public class invenItemController : MonoBehaviour, IBeginDragHandler, IDragHandle
         // 드래그 종료 시
         //canvasGroup.blocksRaycasts = true; // Raycast 다시 활성화
 
-        
-        StopCoroutine("rotation");
+        drag = false;
+ 
         setTileTarget();
+        rotate = false;
         
     }
 
     public void setTileTarget( ) {
-        int row = returnRow();
-        int col = returnCol();
+        int row = getRow();
+        int col = getCol();
        
+
+
         if(invenPanel.AddItem(itemclass, row, col)) {
-            Debug.Log($"{row},{col}");
-            transform.localPosition = new Vector2(row * size - size / 2, -col * size + size / 2);
+           
+            transform.localPosition = invenPanel.slotPosition(row,col); //new Vector2(row * size - size / 2, -col * size + size / 2);
         } else {
-            Debug.Log($"out of range");
+            
             if(originalParent == canvas) {
                 //오리지널 부모가 캔버스일 경우, 바깥일 경우
+                Debug.Log($"out of range");
                 transform.SetParent(canvas.transform);
                 transform.localPosition = resetPosition;
             } else {
+                //
+                
                 transform.localPosition = startPosition;
-                invenPanel.AddItem(itemclass, returnRow(), returnCol());
+                if (rotate) {
+                    setRotation();
+                    //transform.localPosition = invenPanel.slotPosition(row, col);
+                }
+                if(invenPanel.canPlaceItem(itemclass, row, col)) {
+                    Debug.Log($"{row},{col}");
+
+                    transform.localPosition = invenPanel.slotPosition(row, col);
+                    invenPanel.AddItem(itemclass, row, col);
+                } else {
+
+                    transform.localPosition = startPosition;
+                    row = getRow();
+                    col = getCol();
+                    invenPanel.AddItem(itemclass, row, col);
+                }
+
+               
             }
             
         }
@@ -115,8 +137,8 @@ public class invenItemController : MonoBehaviour, IBeginDragHandler, IDragHandle
         invenPanel.printInventory();
     }
     public void resetTileTarget() {
-        int row = returnRow();
-        int col = returnCol();
+        int row = getRow();
+        int col = getCol();
         Debug.Log($"{row},{col}");
         if (invenPanel.RemoveItem(itemclass, row, col)) {
 
@@ -125,12 +147,12 @@ public class invenItemController : MonoBehaviour, IBeginDragHandler, IDragHandle
         }
     }
 
-    public int returnRow() {
+    public int getRow() {
         int row = (int)Mathf.Ceil(( transform.localPosition.x ) / size);
         // int row = (int)Mathf.Ceil(( transform.localPosition.x - invenPanel.pos.parent.localPosition.x) / size);
         return row;
     }
-    public int returnCol() {
+    public int getCol() {
         int col = (int)Mathf.Ceil(-(transform.localPosition.y ) / size);
         //int col = (int)Mathf.Ceil(-(transform.localPosition.y - invenPanel.pos.parent.localPosition.y) / size);
         return col;
